@@ -40,7 +40,8 @@ const places = {
 
 const $webflow_form = $("form[steps_container]");
 //$("[pac_input]").parsley().addError("myError", { message: "missing number" });
-
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
 const $sections = $("form [form_step]");
 const total_slides = $sections.length;
 const $prev = $("[prev]");
@@ -49,11 +50,10 @@ const $clear_storage_btn = $("[clear_storage]");
 const active_button_class = "active";
 const landing_page_url = "/get-started";
 /* webflow & not stage url */
-const production = location.href.includes("daisy");
+const production = location.href.includes("daisy") && !urlParams.has("dev");
 
 /* dev mode */
-const queryString = window.location.search;
-const urlParams = new URLSearchParams(queryString);
+
 const dev_mode = urlParams.has("dev");
 if (production) $("[map]").hide();
 if (dev_mode) $("[map]").show();
@@ -88,6 +88,8 @@ function push_events_seo(event_name) {
       event: event_name,
       contact_type: contact_type
     });
+
+    /* hubspot */
 
     /* GA 4 */
 
@@ -489,12 +491,28 @@ function hubspot_genrate_feilds_object() {
   return array_feilds;
 }
 
-function hubspot_send_form_by_post_api_call() {
+async function hubspot_send_form_by_post_api_call(dispatchEvent) {
   if (production) {
     const portalId = "8041603";
     const formId = "2a169d2c-ca93-4fb6-8d9b-7454bd50d1ce";
     let feilds = hubspot_genrate_feilds_object();
 
+    /* Get IP by API */
+    const get_api_server_url = "https://api.ipify.org?format=json";
+    let ip = await fetch(get_api_server_url)
+      .then((response) => {
+        return response.json();
+      })
+      .then((my_ip) => {
+        return my_ip.ip;
+      })
+      .catch(function (err) {
+        // some error here
+        console.error(`${get_api_server_url} - The IP api is not working`);
+      }); /* end ip fetch */
+    console.log(ip);
+
+    /* hubspot */
     var data = {
       fields: feilds,
       context: {
@@ -503,12 +521,14 @@ function hubspot_send_form_by_post_api_call() {
           "$1"
         ),
         /* include this parameter and set it 
-        to the hubspotutk cookie value
-         to enable cookie tracking on your submission*/
+            to the hubspotutk cookie value
+             to enable cookie tracking on your submission*/
         pageUri: window.location.href,
         pageName: document.title
+        //ipAddress: ip
       }
     };
+    if (ip !== undefined) Object.assign(data["context"], { ipAddress: ip });
 
     let url = `https://api.hsforms.com/submissions/v3/integration/submit/${portalId}/${formId}`;
 
@@ -523,9 +543,9 @@ function hubspot_send_form_by_post_api_call() {
       .then((res) => res.json())
       .then((res) => {
         console.log(res, data);
-        document.dispatchEvent(hubspot_formSubmitted);
-      });
-  }
+        if (dispatchEvent) document.dispatchEvent(hubspot_formSubmitted);
+      }); /* end hubspot fetch */
+  } /* end if production */
 } // end send_hubspot_form
 
 /* ##############################################################
@@ -545,7 +565,7 @@ function hubspot_send_form_by_post_api_call() {
 
 document.addEventListener("webflow_form_submit", () => {
   let event_name = get_event_name();
-  hubspot_send_form_by_post_api_call();
+  hubspot_send_form_by_post_api_call(true);
   //console.log("The slideChange event was triggered")
   let thank_you_page_redirect_url = get_thank_you_page_url();
 
@@ -571,25 +591,23 @@ function get_thank_you_page_url() {
   let in_area_thank_you_page = `/thank-you/welcome?type=${contact_type}`;
   let our_of_area_thank_you_page = `/thank-you/follow-us?type=${contact_type}`;
 
-  if (production) {
-    switch (contact_type) {
-      case "Board member":
-      case "Owner": {
-        let url = is_in_area ? hubspot_meeting : follow_us_page;
-        return url;
-        break;
-      }
-      case "Renter": {
-        let url = is_in_area
-          ? in_area_thank_you_page
-          : our_of_area_thank_you_page;
-        return url;
-        break;
-      }
-      default:
-        console.error(`Sorry no such contact_type ${contact_type}`);
-    } /* end switch */
-  }
+  switch (contact_type) {
+    case "Board member":
+    case "Owner": {
+      let url = is_in_area ? hubspot_meeting : follow_us_page;
+      return url;
+      break;
+    }
+    case "Renter": {
+      let url = is_in_area
+        ? in_area_thank_you_page
+        : our_of_area_thank_you_page;
+      return url;
+      break;
+    }
+    default:
+      console.error(`Sorry no such contact_type ${contact_type}`);
+  } /* end switch */
 }
 
 /*##################🙂‍↔#########################
@@ -769,12 +787,10 @@ function redirect_url(url) {
   }
 }
 function set_progress_bar_message(index) {
-  if (production) {
-    let message = $("[progress_bar_message]")
-      .eq(index)
-      .attr("progress_bar_message");
-    $("[progress_bar_text_node]").text(message);
-  }
+  let message = $("[progress_bar_message]")
+    .eq(index)
+    .attr("progress_bar_message");
+  $("[progress_bar_text_node]").text(message);
 }
 
 function animation(from, to) {}
@@ -823,7 +839,7 @@ function setProgressBar(index) {
   $("[progress_percentage]").text(percentage.toFixed(1) + "%");
 
   /* webflow */
-  if (production) $("[progress_bar]").css("width", percentage + "%");
+  $("[progress_bar]").css("width", percentage + "%");
 }
 
 // Mark the current section with the class 'current'
@@ -852,7 +868,8 @@ function submit_webflow_form() {
   document.dispatchEvent(webflow_form_submit);
 }
 
-/* send email hb form only once (and not each time the user click next/prev)*/
+/* send email hb form only once 
+(and not each time the user click next/prev)*/
 let email_hubspot_form_send = false;
 
 function show_loader() {
@@ -888,10 +905,11 @@ function next_step() {
           }, 900);
         }
       } else {
-        // If event name is email send the hubspot form //
-        if (event_name === "email" && !email_hubspot_form_send && !production) {
+        // If event name is email send the hubspot form + Do not dispatchEvent //
+        if (event_name === "email" && !email_hubspot_form_send && production) {
           email_hubspot_form_send = true;
-          hubspot_send_form_by_post_api_call();
+          /* false ==> do not dispatchEvent */
+          hubspot_send_form_by_post_api_call(false);
         }
 
         document.dispatchEvent(slideNext);
