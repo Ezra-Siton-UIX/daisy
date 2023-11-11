@@ -1,4 +1,4 @@
-/* old form hello:
+/* old form v2:
 
 https://share.hsforms.com/1aJWzFrXyTB6DCpWaJHpm0A4scxv
 
@@ -564,16 +564,12 @@ async function hubspot_send_form_by_post_api_call(dispatchEvent) {
 */
 
 document.addEventListener("webflow_form_submit", () => {
+  /* This runs only in production mode */
   let event_name = get_event_name();
   hubspot_send_form_by_post_api_call(true);
-  //console.log("The slideChange event was triggered")
   let thank_you_page_redirect_url = get_thank_you_page_url();
-
-  if (production) {
-    clear_all_sessionStorage_feilds();
-    redirect_url(thank_you_page_redirect_url);
-  }
-  /* 🚩 IN USA area Or Out of USA Area Match the thank you page 🚩 */
+  clear_all_sessionStorage_feilds();
+  redirect_url(thank_you_page_redirect_url);
 });
 
 function get_thank_you_page_url() {
@@ -616,7 +612,6 @@ function get_thank_you_page_url() {
 
 function navigateTo(index = 0, setLocalStorage = true, push_state = false) {
   // To trigger the Event
-
   document.dispatchEvent(slideChange);
 
   //console.clear();
@@ -650,6 +645,7 @@ function navigateTo(index = 0, setLocalStorage = true, push_state = false) {
     console.error("with errors");
     navigateTo(0);
   }
+
   toogle_next_button();
   setProgressBar(index);
   set_progress_bar_message(index);
@@ -778,9 +774,6 @@ function setStorageItem(key, value) {
 function redirect_url(url) {
   //window.location.replace(url);
   //console.log("redirect to" + url);
-  if (dev_mode) {
-    alert("redirect to" + url);
-  }
   if (!dev_mode) {
     //window.location.href = url;
     window.location.replace(url);
@@ -900,9 +893,13 @@ function next_step() {
         if (production && get_curIndex()) {
           $("[progress_bar]").css("width", 100 + "%");
           setTimeout(function () {
-            // function code goes here
+            // The redirect is here
             submit_webflow_form();
           }, 900);
+        } else {
+          console.log(
+            "last step submit without redirect and send hubspot form in dev mode"
+          );
         }
       } else {
         // If event name is email send the hubspot form + Do not dispatchEvent //
@@ -1157,7 +1154,6 @@ function force_validation() {
       let step_status = $webflow_form.parsley().isValid({
         group: "block-" + get_curIndex()
       });
-      //alert(step_status);
 
       $next.toggleClass(active_button_class, true);
     });
