@@ -77,7 +77,7 @@ const run_event_only_once_values = [];
 
 function push_events_seo(event_name) {
   /* run event only one time per page load */
-  if (!run_event_only_once_values.includes(event_name) && !production) {
+  if (!run_event_only_once_values.includes(event_name)) {
     run_event_only_once_values.push(event_name);
 
     //run_event_only_once_values.push(event_name);
