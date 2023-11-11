@@ -1,4 +1,4 @@
-/* old form v2:
+/* old form:
 
 https://share.hsforms.com/1aJWzFrXyTB6DCpWaJHpm0A4scxv
 
@@ -890,7 +890,7 @@ function next_step() {
         document.dispatchEvent(slideNext);
         show_loader();
 
-        if (production && get_curIndex()) {
+        if (production) {
           $("[progress_bar]").css("width", 100 + "%");
           setTimeout(function () {
             // The redirect is here
