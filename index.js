@@ -925,11 +925,12 @@ function next_step() {
 
 // Previous button is easy, just go back
 $prev.click(function () {
-  if (production && get_curIndex() === 0) {
+  if (get_curIndex() === 0) {
     $("[progress_bar]").css("width", 0 + "%");
     setTimeout(function () {
-      // function code goes here
-      window.location.href = landing_page_url;
+      // Redirect only on webflow io or publish url //
+      if (location.href.includes("daisy"))
+        window.location.href = landing_page_url;
     }, 900);
   } else {
     animation(get_curIndex(), get_curIndex() - 1);
@@ -979,7 +980,7 @@ $("[pac_input]").on("focusout", function () {
 /* Click Enter */
 $(document).on("keydown", "input", function (e) {
   /* show error message if click enter */
-  console.log(e.which);
+  // console.log(e.which);
   if (e.which == 50) {
     //backspace keycode
     //Do something
