@@ -12,17 +12,17 @@ https://share.hsforms.com/1KhadLMqTT7aNm3RUvVDRzg4scxv
 */
 
 /*TOC
-      1. SEO EVENTS 
-      2. Custom Events
-      3. GOOGLE PLACES autocomplete
-      4. Hubspot Mapping
-      5. Webflow FORM SUBMIT
-      6. navigateTo
-      7. map_feilds
-      8. HELPER FUNCTION
-      9. CLICK FUNCTION
-      10. Parsley EVENTS (Docs under: https://parsleyjs.org)
-      */
+    1. SEO EVENTS 
+    2. Custom Events
+    3. GOOGLE PLACES autocomplete
+    4. Hubspot Mapping
+    5. Webflow FORM SUBMIT
+    6. navigateTo
+    7. map_feilds
+    8. HELPER FUNCTION
+    9. CLICK FUNCTION
+    10. Parsley EVENTS (Docs under: https://parsleyjs.org)
+    */
 
 /*############## Variables ##############*/
 
@@ -37,6 +37,10 @@ const places = {
   cities: ["Jersey City", "Hoboken", "Union City", "Fort Lee", "Edgewater"],
   states: ["Florida"]
 };
+
+/* hubspot form values */
+const portalId = "8041603";
+const formId = "2a169d2c-ca93-4fb6-8d9b-7454bd50d1ce";
 
 const $webflow_form = $("form[steps_container]");
 //$("[pac_input]").parsley().addError("myError", { message: "missing number" });
@@ -53,13 +57,15 @@ const landing_page_url = "/get-started";
 const production = location.href.includes("daisy") && !urlParams.has("dev");
 
 /* dev mode */
-
 const dev_mode = urlParams.has("dev");
 if (production) $("[map]").hide();
 if (dev_mode) $("[map]").show();
 
-// Prepare sections by setting the `data-parsley-group` attribute to 'block-0', 'block-1', etc.
+/* send email hb form only once (change to true after HB form sends)
+(and not each time the user click next/prev)*/
+let email_hubspot_form_send = false;
 
+// Prepare sections by setting the `data-parsley-group` attribute to 'block-0', 'block-1', etc.
 $sections.each(function (index, section) {
   $(section)
     .find(":input")
@@ -70,7 +76,7 @@ $sections.each(function (index, section) {
 $("[pac_input]").attr("data-parsley-trigger", "null");
 
 /* ############################################
-          1 of 10  SEO Events 🤠
+        1 of 10  SEO Events 🤠
 ###############################################*/
 
 const run_event_only_once_values = [];
@@ -81,7 +87,7 @@ function push_events_seo(event_name) {
     run_event_only_once_values.push(event_name);
 
     //run_event_only_once_values.push(event_name);
-    console.log(run_event_only_once_values);
+    //console.log("hello", run_event_only_once_values);
     /* GTM */
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
@@ -96,21 +102,19 @@ function push_events_seo(event_name) {
     /* mixPanel */
 
     /* LuckyOrange */
-    if (LO !== null) LO.events.track(event_name);
+
+    if (typeof LO !== "undefined") {
+      // the variable is defined
+      LO.events.track(event_name);
+    }
 
     console.log(`LO.events.track(${event_name})`);
   } /*end if */
 }
 
 /*##################🙂‍↔#########################
-                  2 of 10  custom Events
-    ####################🙂‍↔##########################*/
-
-function get_event_name() {
-  let index = get_curIndex();
-  let event_name = $sections.eq(index).attr("data-event");
-  return event_name;
-}
+                2 of 10  custom Events
+  ####################🙂‍↔##########################*/
 
 const slideChange = new Event("slideChange");
 const webflow_form_submit = new Event("webflow_form_submit");
@@ -138,14 +142,22 @@ document.addEventListener("slideNext", () => {
   push_state_on_slide_changed(event_name);
 
   /*
-    $(".class_name").remove();
-    $("#map").append(
-      `<div style="padding: 10px; background: lightgray" class="class_name"><b>Event Name:</b><p>${event_name}</p></div>`
-    );*/
+  $(".class_name").remove();
+  $("#map").append(
+    `<div style="padding: 10px; background: lightgray" class="class_name"><b>Event Name:</b><p>${event_name}</p></div>`
+  );*/
 });
 
+window.addEventListener("popstate", (event) => {
+  console.log("popstate", event);
+  console.log(
+    `location: ${document.location}, state: ${JSON.stringify(event.state)}`
+  );
+  navigateTo(0);
+}); /* end popstate */
+
 /* ############################################
-      3 of 10   GOOGLE PLACES autocomplete  🤠
+    3 of 10   GOOGLE PLACES autocomplete  🤠
 ###############################################*/
 
 let google_places_keys = [
@@ -330,7 +342,7 @@ window.Parsley.addValidator("street_number", {
 });
 
 /* ############################################
-          3 of 10  Hubspot Mapping 🤠
+        3 of 10  Hubspot Mapping 🤠
 ###############################################*/
 
 let hubspot_form_feilds = [
@@ -361,34 +373,34 @@ var utms = [
 
 /* put this code global in your project
 var utms = [
-  "utm_source",
-  "utm_medium",
-  "utm_campaign",
-  "utm_term",
-  "utm_content"
+"utm_source",
+"utm_medium",
+"utm_campaign",
+"utm_term",
+"utm_content"
 ];
 
 function getUTMParameterByName(name) {
-  name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-  var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-    results = regex.exec(location.search);
-  return results === null
-    ? ""
-    : decodeURIComponent(results[1].replace(/\+/g, " "));
+name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+  results = regex.exec(location.search);
+return results === null
+  ? ""
+  : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
 if (typeof Storage !== "undefined") {
-  sessionStorage.referrer = document.referrer;
+sessionStorage.referrer = document.referrer;
 
-  for (var i = 0; i < utms.length; i++) {
-    var utm = utms[i],
-      utm_value = getUTMParameterByName(utm);
-    if (utm_value) {
-      sessionStorage.setItem(utm, utm_value);
-    }
+for (var i = 0; i < utms.length; i++) {
+  var utm = utms[i],
+    utm_value = getUTMParameterByName(utm);
+  if (utm_value) {
+    sessionStorage.setItem(utm, utm_value);
   }
+}
 } else {
-  // Sorry! No Web Storage support..
+// Sorry! No Web Storage support..
 }
 
 */
@@ -491,47 +503,47 @@ function hubspot_genrate_feilds_object() {
   return array_feilds;
 }
 
-async function hubspot_send_form_by_post_api_call(dispatchEvent) {
+async function hubspot_send_form_by_post_api_call(dispatchEvent = true) {
+  let feilds = hubspot_genrate_feilds_object();
+
+  /* Get IP by API */
+  const get_api_server_url = "https://api.ipify.org?format=json";
+  let ip = await fetch(get_api_server_url)
+    .then((response) => {
+      return response.json();
+    })
+    .then((my_ip) => {
+      return my_ip.ip;
+    })
+    .catch(function (err) {
+      // some error here
+      console.error(`${get_api_server_url} - The IP api is not working`);
+    }); /* end ip fetch */
+  console.log(ip);
+
+  /* hubspot */
+  var data = {
+    fields: feilds,
+    context: {
+      hutk: document.cookie.replace(
+        /(?:(?:^|.*;\s*)hubspotutk\s*\=\s*([^;]*).*$)|^.*$/,
+        "$1"
+      ),
+      /* include this parameter and set it 
+          to the hubspotutk cookie value
+            to enable cookie tracking on your submission*/
+      pageUri: window.location.href,
+      pageName: document.title
+      //ipAddress: ip
+    }
+  };
+  if (ip !== undefined) Object.assign(data["context"], { ipAddress: ip });
+
+  let url = `https://api.hsforms.com/submissions/v3/integration/submit/${portalId}/${formId}`;
+
+  console.log(data);
+
   if (production) {
-    const portalId = "8041603";
-    const formId = "2a169d2c-ca93-4fb6-8d9b-7454bd50d1ce";
-    let feilds = hubspot_genrate_feilds_object();
-
-    /* Get IP by API */
-    const get_api_server_url = "https://api.ipify.org?format=json";
-    let ip = await fetch(get_api_server_url)
-      .then((response) => {
-        return response.json();
-      })
-      .then((my_ip) => {
-        return my_ip.ip;
-      })
-      .catch(function (err) {
-        // some error here
-        console.error(`${get_api_server_url} - The IP api is not working`);
-      }); /* end ip fetch */
-    console.log(ip);
-
-    /* hubspot */
-    var data = {
-      fields: feilds,
-      context: {
-        hutk: document.cookie.replace(
-          /(?:(?:^|.*;\s*)hubspotutk\s*\=\s*([^;]*).*$)|^.*$/,
-          "$1"
-        ),
-        /* include this parameter and set it 
-            to the hubspotutk cookie value
-             to enable cookie tracking on your submission*/
-        pageUri: window.location.href,
-        pageName: document.title
-        //ipAddress: ip
-      }
-    };
-    if (ip !== undefined) Object.assign(data["context"], { ipAddress: ip });
-
-    let url = `https://api.hsforms.com/submissions/v3/integration/submit/${portalId}/${formId}`;
-
     fetch(url, {
       method: "POST",
       headers: {
@@ -543,30 +555,30 @@ async function hubspot_send_form_by_post_api_call(dispatchEvent) {
       .then((res) => res.json())
       .then((res) => {
         console.log(res, data);
+        /* when only email submit do not run event */
         if (dispatchEvent) document.dispatchEvent(hubspot_formSubmitted);
       }); /* end hubspot fetch */
   } /* end if production */
 } // end send_hubspot_form
 
 /* ##############################################################
-        5 of 10 - On Webflow FORM SUBMIT  🤠
-  /* ##############################################################*/
+      5 of 10 - On Webflow FORM SUBMIT (webflow event runs hubspot API post) 🤠
+/* ##############################################################*/
 
 /*
-  <script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/embed/v2.js"></script>
+<script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/embed/v2.js"></script>
 <script>
-  hbspt.forms.create({
-    region: "na1",
-    portalId: "8041603",
-    formId: "2a169d2c-ca93-4fb6-8d9b-7454bd50d1ce"
-  });
+hbspt.forms.create({
+  region: "na1",
+  portalId: "8041603",
+  formId: "2a169d2c-ca93-4fb6-8d9b-7454bd50d1ce"
+});
 </script>
 */
 
 document.addEventListener("webflow_form_submit", () => {
   /* This runs only in production mode */
-  let event_name = get_event_name();
-  hubspot_send_form_by_post_api_call(true);
+  hubspot_send_form_by_post_api_call();
   let thank_you_page_redirect_url = get_thank_you_page_url();
   clear_all_sessionStorage_feilds();
   redirect_url(thank_you_page_redirect_url);
@@ -575,13 +587,16 @@ document.addEventListener("webflow_form_submit", () => {
 function get_thank_you_page_url() {
   let is_in_area = getSessionStorageItem(`in_area`);
 
+  let hubspot_feilds = hubspot_genrate_feilds_object();
+  const city = hubspot_feilds.find((element) => element.name == "city");
+
   if (is_in_area === null) {
     is_in_area = false;
   }
   /* url list */
   let hubspot_meeting = `/thank-you/meeting?email=${getSessionStorageItem(
     `email`
-  )}&type=${contact_type}`;
+  )}&type=${contact_type}&city=${city.value}`;
   let follow_us_page = `/thank-you/follow-us?type=${contact_type}`;
 
   let in_area_thank_you_page = `/thank-you/welcome?type=${contact_type}`;
@@ -607,8 +622,8 @@ function get_thank_you_page_url() {
 }
 
 /*##################🙂‍↔#########################
-                  6 of 10  navigateTo 🤠
-    ####################🙂‍↔##########################*/
+                6 of 10  navigateTo 🤠
+  ####################🙂‍↔##########################*/
 
 function navigateTo(index = 0, setLocalStorage = true, push_state = false) {
   // To trigger the Event
@@ -619,31 +634,15 @@ function navigateTo(index = 0, setLocalStorage = true, push_state = false) {
     index = 0;
   }
 
-  //check_entire_form_status();
   control_Navigation(index);
-
-  /* pushState only when you navigateTo (Not when user go back/forward on the broswer history) */
-  //console.log("from:" + get_curIndex(), "to:" +  index);
 
   /* THE ORDER here matters */
   show_current_slide(index);
-  if (production) setFeildFocus(index);
+  setFeildFocus(index);
 
   /* Disable localstorage only if the user go backward (The back is without any validation) */
   if (setLocalStorage) {
     map_feilds();
-  }
-
-  /* HASH Handler - if step before is false */
-  let before_steps_are_true = check_entire_form_status();
-  before_steps_are_true = before_steps_are_true.slice(0, index);
-  //console.log(before_steps_are_true);
-  let errors_before_this_step = steps_back_are_not_valid(before_steps_are_true);
-  //console.log(before_steps_are_true, errors_before_this_step);
-
-  if (errors_before_this_step) {
-    console.error("with errors");
-    navigateTo(0);
   }
 
   toogle_next_button();
@@ -652,18 +651,8 @@ function navigateTo(index = 0, setLocalStorage = true, push_state = false) {
 }
 
 /*##################🙂‍↔############################
-                  7 of 10 map_feilds 🤠
-    ####################🙂‍↔##########################*/
-
-function clear_all_sessionStorage_feilds() {
-  var $sections_feilds = $("[form_step] input, textarea");
-  $sections_feilds.each(function (index) {
-    var feild_name = $(this).attr("name");
-    console.log("feild_name feild_name", feild_name);
-    sessionStorageRemoveItem(feild_name);
-  }); /* end each*/
-  reset_address();
-}
+                7 of 10 map_feilds 🤠
+  ####################🙂‍↔##########################*/
 
 function map_feilds() {
   var $sections_feilds = $("[form_step] input, textarea");
@@ -701,8 +690,7 @@ function map_feilds() {
       default:
         console.log("no such case for");
     }
-
-    //console.log(feild_name, ":", feild_value);
+    /* Append each value */
     if ($(this).prop("checked") || node_Type !== "radio") {
       var $newNode = $(
         `<li class="mapping"><b>${feild_name}</b>: ${feild_value}</li>`
@@ -711,6 +699,15 @@ function map_feilds() {
     }
   }); /* end each*/
 
+  createMapDivHelper_to_show_data();
+}
+
+/*##################🙂‍↔############################
+              8 of 10    HELPER FUNCTION 🤠
+######################🙂‍↔##########################*/
+
+/* helper generate #map to compare if the data is true */
+function createMapDivHelper_to_show_data() {
   $("#map").append(`<h4 class="mapping">Place values</h4>`);
 
   google_places_keys.forEach((this_value) => {
@@ -736,20 +733,32 @@ function map_feilds() {
     //console.log(this_value);
     // print the current element of the array
     var $newNode = $(
-      `<li class="mapping" style="color: orange"><b>${this_value.name}</b>: ${this_value.value} </li>`
+      `<li class="mapping" style="color: purple"><b>${this_value.name}</b>: ${this_value.value} </li>`
     );
 
     $("#map").append($newNode);
-  });
+  }); /* end forEach */
 
   $("#map").append(
     `<div class="mapping"><h6 >Thank you page URL:</h6><p>${get_thank_you_page_url()}</p></div>`
   );
 }
 
-/*##################🙂‍↔############################
-                8 of 10    HELPER FUNCTION 🤠
-  ######################🙂‍↔##########################*/
+function clear_all_sessionStorage_feilds() {
+  var $sections_feilds = $("[form_step] input, textarea");
+  $sections_feilds.each(function (index) {
+    var feild_name = $(this).attr("name");
+    //console.log("feild_name feild_name", feild_name);
+    sessionStorageRemoveItem(feild_name);
+  }); /* end each*/
+  reset_address();
+}
+
+function get_event_name() {
+  let index = get_curIndex();
+  let event_name = $sections.eq(index).attr("data-event");
+  return event_name;
+}
 
 function reset_address() {
   google_places_keys.forEach((this_value) => {
@@ -774,7 +783,7 @@ function setStorageItem(key, value) {
 function redirect_url(url) {
   //window.location.replace(url);
   //console.log("redirect to" + url);
-  if (!dev_mode) {
+  if (production) {
     //window.location.href = url;
     window.location.replace(url);
   }
@@ -785,8 +794,6 @@ function set_progress_bar_message(index) {
     .attr("progress_bar_message");
   $("[progress_bar_text_node]").text(message);
 }
-
-function animation(from, to) {}
 
 function steps_back_are_not_valid(arr) {
   let findErrors = false;
@@ -844,8 +851,13 @@ function show_current_slide(index) {
 }
 
 function setFeildFocus(index) {
-  if (production && $(window).width() > 960) {
-    $sections.eq(index).find("input:not([type='radio'])").first().focus();
+  if (true && $(window).width() > 960) {
+    $sections
+      .eq(index)
+      .find("input:not([pac_input]):not([type='radio']")
+      .first()
+      .focus();
+
     $sections.eq(index).find("textarea").first().focus();
   }
 }
@@ -860,10 +872,6 @@ function submit_webflow_form() {
   map_feilds();
   document.dispatchEvent(webflow_form_submit);
 }
-
-/* send email hb form only once 
-(and not each time the user click next/prev)*/
-let email_hubspot_form_send = false;
 
 function show_loader() {
   $("[loader_wrapper]").addClass("shown");
@@ -890,17 +898,11 @@ function next_step() {
         document.dispatchEvent(slideNext);
         show_loader();
 
-        if (production) {
-          $("[progress_bar]").css("width", 100 + "%");
-          setTimeout(function () {
-            // The redirect is here
-            submit_webflow_form();
-          }, 900);
-        } else {
-          console.log(
-            "last step submit without redirect and send hubspot form in dev mode"
-          );
-        }
+        $("[progress_bar]").css("width", 100 + "%");
+        setTimeout(function () {
+          // The redirect is here
+          submit_webflow_form();
+        }, 900);
       } else {
         // If event name is email send the hubspot form + Do not dispatchEvent //
         if (event_name === "email" && !email_hubspot_form_send && production) {
@@ -917,8 +919,8 @@ function next_step() {
 }
 
 /*##################👆🏼👆🏼👆↔############################
-                  9 of 10    CLICK FUNCTION 🤠
-      ####################👆🏼👆🏼👆↔##########################*/
+                9 of 10    CLICK FUNCTION 🤠
+    ####################👆🏼👆🏼👆↔##########################*/
 
 // Previous button is easy, just go back
 $prev.click(function () {
@@ -930,7 +932,6 @@ $prev.click(function () {
         window.location.href = landing_page_url;
     }, 900);
   } else {
-    animation(get_curIndex(), get_curIndex() - 1);
     navigateTo(get_curIndex() - 1, false);
   }
 });
@@ -1012,6 +1013,7 @@ function check_entire_form_status() {
     });
     steps_status.push(status);
   });
+  console.log(steps_status);
   return steps_status;
 } /* end check_entire_form_status */
 
@@ -1040,27 +1042,34 @@ function is_valid_slide(index) {
   return is_valid;
 }
 
-function on_init_navigate_to_step_hash() {
-  let params = new URLSearchParams(document.location.search);
-  let step = get_step_hash();
+function force_validation() {
+  $next.toggleClass(active_button_class, false);
+  $webflow_form
+    .parsley()
+    .whenValidate({
+      group: "block-" + get_curIndex()
+    })
+    .done(function () {
+      let step_status = $webflow_form.parsley().isValid({
+        group: "block-" + get_curIndex()
+      });
 
-  //let is_valid_step = check_this_step_status();
-  let isNull = Object.is(step, null);
+      $next.toggleClass(active_button_class, true);
+    });
+}
 
-  if (!isNull && step > 0) {
-    navigateTo(step);
-  } else {
+function not_in_use_hash_navigation(index) {
+  /* HASH Handler - if step before is false */
+  let before_steps_are_true = check_entire_form_status();
+  before_steps_are_true = before_steps_are_true.slice(0, index);
+  //console.log(before_steps_are_true);
+  let errors_before_this_step = steps_back_are_not_valid(before_steps_are_true);
+  //console.log(before_steps_are_true, errors_before_this_step);
+  if (errors_before_this_step) {
+    console.error("with errors");
     navigateTo(0);
   }
 }
-
-window.addEventListener("popstate", (event) => {
-  console.log("popstate", event);
-  console.log(
-    `location: ${document.location}, state: ${JSON.stringify(event.state)}`
-  );
-  navigateTo(0);
-}); /* end popstate */
 
 /*###############################################*/
 /* ########### 10 of 10 Parsley EVENTS 🤠 ###########*/
@@ -1115,12 +1124,12 @@ Parsley.on("field:init", function (i) {
 
 Parsley.on("field:validate", function (i) {
   //Triggered when a field validation is triggered, before its validation
-  console.log("field:validate");
+  //console.log("field:validate");
 });
 
 Parsley.on("field:success", function (i) {
   //Triggered when a field validation succeeds.
-  console.log("field:success");
+  //console.log("field:success");
 });
 
 Parsley.on("field:error", function (i) {
@@ -1141,20 +1150,4 @@ $("input:not([pac_input])").on("change", function (i) {
   setStorageItem($(this).attr("name"), $(this).val());
 });
 
-on_init_navigate_to_step_hash();
-
-function force_validation() {
-  $next.toggleClass(active_button_class, false);
-  $webflow_form
-    .parsley()
-    .whenValidate({
-      group: "block-" + get_curIndex()
-    })
-    .done(function () {
-      let step_status = $webflow_form.parsley().isValid({
-        group: "block-" + get_curIndex()
-      });
-
-      $next.toggleClass(active_button_class, true);
-    });
-}
+navigateTo(0);
