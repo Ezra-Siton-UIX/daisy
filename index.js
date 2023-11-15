@@ -503,8 +503,11 @@ function hubspot_genrate_feilds_object() {
   return array_feilds;
 }
 
-async function hubspot_send_form_by_post_api_call(dispatchEvent = true) {
+async function hubspot_send_form_by_post_api_call(
+  redirect_url_after_hb_post_request = true
+) {
   let feilds = hubspot_genrate_feilds_object();
+  let thank_you_page_redirect_url = get_thank_you_page_url();
 
   /* Get IP by API */
   const get_api_server_url = "https://api.ipify.org?format=json";
@@ -555,8 +558,14 @@ async function hubspot_send_form_by_post_api_call(dispatchEvent = true) {
       .then((res) => res.json())
       .then((res) => {
         console.log(res, data);
-        /* when only email submit do not run event */
-        if (dispatchEvent) document.dispatchEvent(hubspot_formSubmitted);
+        /* when email submit do not redirect */
+        if (redirect_url_after_hb_post_request) {
+          document.dispatchEvent(hubspot_formSubmitted);
+          clear_all_sessionStorage_feilds();
+          redirect_url(thank_you_page_redirect_url);
+        } else {
+          console.log("succsed api call without redirect");
+        }
       }); /* end hubspot fetch */
   } /* end if production */
 } // end send_hubspot_form
@@ -577,11 +586,8 @@ hbspt.forms.create({
 */
 
 document.addEventListener("webflow_form_submit", () => {
-  /* This runs only in production mode */
+  /* This runs only api call production mode */
   hubspot_send_form_by_post_api_call();
-  let thank_you_page_redirect_url = get_thank_you_page_url();
-  clear_all_sessionStorage_feilds();
-  redirect_url(thank_you_page_redirect_url);
 });
 
 function get_thank_you_page_url() {
