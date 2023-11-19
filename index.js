@@ -105,11 +105,11 @@ function push_events_seo(event_name) {
     window.LOQ = window.LOQ || [];
     window.LOQ.push([
       "ready",
-      async (LO) => {
+      function (LO) {
         // Track an event
-        await LO.$internal.ready("events");
-        LO.events.track(event_name);
-        console.log(`LO.events.track(${event_name})`);
+        LO.$internal.ready("events").then(function () {
+          LO.events.track(event_name);
+        });
       }
     ]); /* end LuckyOrange */
       
