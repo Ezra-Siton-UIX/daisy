@@ -100,15 +100,19 @@ function push_events_seo(event_name) {
     /* GA 4 */
 
     /* mixPanel */
-
+      
     /* LuckyOrange */
-
-    if (typeof LO !== "undefined") {
-      // the variable is defined
-      LO.events.track(event_name);
-    }
-
-    console.log(`LO.events.track(${event_name})`);
+    window.LOQ = window.LOQ || [];
+    window.LOQ.push([
+      "ready",
+      async (LO) => {
+        // Track an event
+        await LO.$internal.ready("events");
+        LO.events.track(event_name);
+        console.log(`LO.events.track(${event_name})`);
+      }
+    ]); /* end LuckyOrange */
+      
   } /*end if */
 }
 
