@@ -1,0 +1,130 @@
+:root {
+  --ls-accent: #1f6036;
+  --ls-muted: #c2c2c2;
+  --ls-text: #1a1a1a;
+  --ls-step-h: 2.5rem;   /* height of one step row in the nav */
+  --ls-dot: 14px;
+  --ls-indicator: 44px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  color: var(--ls-text);
+  background: #fff;
+}
+
+.spacer {
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  background: #f4f4f4;
+}
+
+/* ---------- Component ---------- */
+
+.ls__inner {
+  height: 100vh;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: 240px 1fr 1.4fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+/* Nav / timeline */
+.ls__nav { position: relative; }
+
+.ls__steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.ls__step {
+  all: unset;
+  cursor: pointer;
+  height: var(--ls-step-h);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--ls-muted);
+  font-weight: 600;
+  transition: color .2s;
+}
+.ls__step:hover { color: var(--ls-accent); text-decoration: underline; }
+.ls__step:focus-visible { outline: 2px solid var(--ls-accent); outline-offset: 4px; }
+
+.ls__dot {
+  flex: none;
+  width: var(--ls-dot);
+  height: var(--ls-dot);
+  margin-left: calc((var(--ls-indicator) - var(--ls-dot)) / 2);
+  border-radius: 50%;
+  background: var(--ls-muted);
+  position: relative;
+  z-index: 1;
+  transition: background .2s, transform .2s;
+}
+
+.ls__step.is-active { color: var(--ls-text); }
+.ls__step.is-active .ls__dot { background: var(--ls-accent); }
+.ls__step.is-current .ls__dot { transform: scale(1.3); }
+
+/* Vertical track between first and last dot */
+.ls__track {
+  position: absolute;
+  top: calc(var(--ls-step-h) / 2);
+  bottom: calc(var(--ls-step-h) / 2);
+  left: calc(var(--ls-indicator) / 2 - 2px);
+  width: 4px;
+  background: var(--ls-muted);
+  border-radius: 4px;
+}
+
+/* --ls-progress (0 → 1) is set from JS */
+.ls__fill {
+  width: 100%;
+  height: calc(var(--ls-progress, 0) * 100%);
+  background: var(--ls-accent);
+  border-radius: inherit;
+}
+
+.ls__indicator {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--ls-progress, 0) * 100%);
+  width: var(--ls-indicator);
+  height: var(--ls-indicator);
+  translate: -50% -50%;
+  z-index: 2;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(255, 159, 167, .7);
+  display: grid;
+  place-items: center;
+}
+.ls__indicator img { width: 70%; height: auto; }
+
+/* Texts – all stacked in the same grid cell */
+.ls__texts { display: grid; }
+.ls__text { grid-area: 1 / 1; }
+.ls__text h2 { font-size: 2.25rem; margin: 0 0 1rem; }
+.ls__text p  { font-size: 1.125rem; line-height: 1.6; margin: 0; }
+
+.ls__lottie { width: 100%; aspect-ratio: 1; max-height: 80vh; }
+
+/* ---------- Desktop-only effect ----------
+   Below the breakpoint the component is hidden.
+   Keep in sync with BREAKPOINT in script.js */
+@media (max-width: 991px) {
+  .ls { display: none; }
+}

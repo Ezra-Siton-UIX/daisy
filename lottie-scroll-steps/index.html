@@ -1,0 +1,80 @@
+<!--
+  Lottie Scroll Steps — CodePen ready
+  CodePen: paste everything between the "PEN HTML" markers into the HTML panel,
+  style.css into CSS, script.js into JS, and add the 4 scripts below under
+  Settings → JS → External Scripts (same order).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lottie Scroll Steps</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ===== PEN HTML START ===== -->
+<div class="spacer">Scroll ↓</div>
+
+<section class="ls" data-ls>
+  <div class="ls__inner">
+
+    <!-- Timeline nav -->
+    <nav class="ls__nav" aria-label="Steps">
+      <div class="ls__track">
+        <div class="ls__fill"></div>
+        <div class="ls__indicator">
+          <img src="https://cdn.prod.website-files.com/69032be4f5a4894fbc46d142/69032be4f5a4894fbc46d1e5_sneakers.png" alt="" />
+        </div>
+      </div>
+      <ol class="ls__steps">
+        <li><button type="button" class="ls__step" data-ls-step><span class="ls__dot"></span>Return request</button></li>
+        <li><button type="button" class="ls__step" data-ls-step><span class="ls__dot"></span>AI Quality Assurance</button></li>
+        <li><button type="button" class="ls__step" data-ls-step><span class="ls__dot"></span>Virtual warehouse</button></li>
+        <li><button type="button" class="ls__step" data-ls-step><span class="ls__dot"></span>Embedded widgets</button></li>
+        <li><button type="button" class="ls__step" data-ls-step><span class="ls__dot"></span>Return shipped directly</button></li>
+      </ol>
+    </nav>
+
+    <!-- Rotating texts (stacked on top of each other) -->
+    <div class="ls__texts">
+      <article class="ls__text" data-ls-text>
+        <h2>Return request</h2>
+        <p>Customers issue a return request using your current RMA system.</p>
+      </article>
+      <article class="ls__text" data-ls-text>
+        <h2>AI Quality Assurance</h2>
+        <p>Our AI quality assurance engine combines data and image recognition, to provide immediate feedback and ensure only eligible items will be resold.</p>
+      </article>
+      <article class="ls__text" data-ls-text>
+        <h2>Virtual warehouse</h2>
+        <p>Returned items are listed in Uturn’s virtual warehouse where you can manage them, set reselling rules, and get insightful data from a single, intuitive dashboard.</p>
+      </article>
+      <article class="ls__text" data-ls-text>
+        <h2>Embedded widgets</h2>
+        <p>UTurn's Smart widgets provide maximum conversion at minimum exposure. Customers can add Re: Turn items to the shopping cart to their regular Checkout!</p>
+      </article>
+      <article class="ls__text" data-ls-text>
+        <h2>Return shipped directly</h2>
+        <p>The sold return item is sent to a local customer directly, cutting down on shipping and logistics costs. Items that aren’t sold go back to your warehouse.</p>
+      </article>
+    </div>
+
+    <!-- Lottie (frame is driven by scroll) -->
+    <div class="ls__lottie" data-ls-lottie
+         data-src="https://uploads-ssl.webflow.com/6387ba2b5e5c1278d6b5ec3b/65e9dc819ecc73eb3a0f01b1_uturn-lotie-new.json"></div>
+
+  </div>
+</section>
+
+<div class="spacer">The end</div>
+<!-- ===== PEN HTML END ===== -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
